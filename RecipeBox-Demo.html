@@ -26,15 +26,70 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
         }
+        .recipe-image {
+            background-size: cover;
+            background-position: center;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
     </style>
 </head>
 <body class="bg-claude-cream">
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useMemo } = React;
 
-        // Mock Data
+        // Recipe images and emojis mapping
+        const recipeVisuals = {
+            'Classic Chocolate Chip Cookies': {
+                gradient: 'linear-gradient(135deg, #D2691E 0%, #8B4513 100%)',
+                emoji: '🍪',
+                image: 'https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=800&q=80'
+            },
+            'Creamy Tomato Pasta': {
+                gradient: 'linear-gradient(135deg, #FF6B6B 0%, #C92A2A 100%)',
+                emoji: '🍝',
+                image: 'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=800&q=80'
+            },
+            'Honey Garlic Chicken': {
+                gradient: 'linear-gradient(135deg, #FFD93D 0%, #F97316 100%)',
+                emoji: '🍗',
+                image: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=800&q=80'
+            },
+            'Fresh Garden Salad': {
+                gradient: 'linear-gradient(135deg, #51CF66 0%, #2F9E44 100%)',
+                emoji: '🥗',
+                image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80'
+            },
+            'Banana Bread': {
+                gradient: 'linear-gradient(135deg, #FCC419 0%, #F59F00 100%)',
+                emoji: '🍌',
+                image: 'https://images.unsplash.com/photo-1623334044303-241021148842?w=800&q=80'
+            },
+            'Margherita Pizza': {
+                gradient: 'linear-gradient(135deg, #FF8787 0%, #FA5252 100%)',
+                emoji: '🍕',
+                image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=800&q=80'
+            },
+            'Greek Yogurt Parfait': {
+                gradient: 'linear-gradient(135deg, #CED4DA 0%, #868E96 100%)',
+                emoji: '🥛',
+                image: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=800&q=80'
+            },
+            'Beef Tacos': {
+                gradient: 'linear-gradient(135deg, #FFD43B 0%, #FD7E14 100%)',
+                emoji: '🌮',
+                image: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&q=80'
+            }
+        };
+
+        // Mock Data with more recipes
         const mockRecipes = [
             {
                 id: '1',
@@ -46,6 +101,7 @@
                 isFavorite: true,
                 isWishList: false,
                 categories: ['Dessert', 'Baking'],
+                createdAt: '2024-01-15',
                 ingredients: [
                     { id: '1', text: '2 1/4 cups all-purpose flour' },
                     { id: '2', text: '1 tsp baking soda' },
@@ -65,9 +121,9 @@
                     { id: '5', stepNumber: 5, text: 'Gradually blend in flour mixture.' },
                     { id: '6', stepNumber: 6, text: 'Stir in chocolate chips.' },
                     { id: '7', stepNumber: 7, text: 'Drop rounded tablespoons onto ungreased cookie sheets.' },
-                    { id: '8', stepNumber: 8, text: 'Bake 9-11 minutes or until golden brown. Cool on baking sheet for 2 minutes.' },
+                    { id: '8', stepNumber: 8, text: 'Bake 9-11 minutes or until golden brown.' },
                 ],
-                tips: ['Use room temperature butter for best results', 'Don\'t overbake - cookies will firm up as they cool', 'For extra flavor, try using half dark chocolate chips'],
+                tips: ['Use room temperature butter for best results', 'Don\'t overbake - cookies will firm up as they cool'],
             },
             {
                 id: '2',
@@ -79,25 +135,22 @@
                 isFavorite: false,
                 isWishList: true,
                 categories: ['Dinner', 'Italian', 'Quick & Easy'],
+                createdAt: '2024-01-20',
                 ingredients: [
-                    { id: '1', text: '1 lb pasta (penne or rigatoni)' },
+                    { id: '1', text: '1 lb pasta' },
                     { id: '2', text: '2 cups crushed tomatoes' },
                     { id: '3', text: '1 cup heavy cream' },
                     { id: '4', text: '3 cloves garlic, minced' },
-                    { id: '5', text: '1/4 cup parmesan cheese, grated' },
-                    { id: '6', text: '2 tbsp olive oil' },
-                    { id: '7', text: 'Fresh basil for garnish' },
-                    { id: '8', text: 'Salt and pepper to taste' },
+                    { id: '5', text: '1/4 cup parmesan cheese' },
                 ],
                 directions: [
-                    { id: '1', stepNumber: 1, text: 'Cook pasta according to package directions. Reserve 1 cup pasta water.' },
-                    { id: '2', stepNumber: 2, text: 'Heat olive oil in a large pan, sauté garlic until fragrant (about 30 seconds).' },
+                    { id: '1', stepNumber: 1, text: 'Cook pasta according to package directions.' },
+                    { id: '2', stepNumber: 2, text: 'Sauté garlic in olive oil until fragrant.' },
                     { id: '3', stepNumber: 3, text: 'Add crushed tomatoes and simmer 10 minutes.' },
-                    { id: '4', stepNumber: 4, text: 'Stir in heavy cream and parmesan cheese.' },
-                    { id: '5', stepNumber: 5, text: 'Toss with cooked pasta, adding pasta water to reach desired consistency.' },
-                    { id: '6', stepNumber: 6, text: 'Season with salt and pepper, garnish with fresh basil and serve immediately.' },
+                    { id: '4', stepNumber: 4, text: 'Stir in heavy cream and parmesan.' },
+                    { id: '5', stepNumber: 5, text: 'Toss with cooked pasta and serve.' },
                 ],
-                tips: ['Save pasta water to adjust sauce consistency', 'Use full-fat cream for the best texture'],
+                tips: ['Save pasta water to adjust sauce consistency'],
             },
             {
                 id: '3',
@@ -109,25 +162,22 @@
                 isFavorite: true,
                 isWishList: false,
                 categories: ['Dinner', 'Chicken', 'Asian'],
+                createdAt: '2024-01-10',
                 ingredients: [
-                    { id: '1', text: '2 lbs chicken thighs, boneless' },
+                    { id: '1', text: '2 lbs chicken thighs' },
                     { id: '2', text: '1/3 cup honey' },
                     { id: '3', text: '1/4 cup soy sauce' },
                     { id: '4', text: '4 cloves garlic, minced' },
                     { id: '5', text: '1 tbsp ginger, grated' },
-                    { id: '6', text: '2 tbsp olive oil' },
-                    { id: '7', text: 'Sesame seeds for garnish' },
-                    { id: '8', text: 'Green onions, sliced' },
                 ],
                 directions: [
-                    { id: '1', stepNumber: 1, text: 'Season chicken thighs with salt and pepper.' },
+                    { id: '1', stepNumber: 1, text: 'Season chicken with salt and pepper.' },
                     { id: '2', stepNumber: 2, text: 'Mix honey, soy sauce, garlic, and ginger in a bowl.' },
-                    { id: '3', stepNumber: 3, text: 'Heat oil in a large skillet over medium-high heat.' },
-                    { id: '4', stepNumber: 4, text: 'Sear chicken until golden brown on both sides, about 3-4 minutes per side.' },
-                    { id: '5', stepNumber: 5, text: 'Pour sauce over chicken and simmer until cooked through and sauce thickens, about 10-12 minutes.' },
-                    { id: '6', stepNumber: 6, text: 'Garnish with sesame seeds and green onions. Serve over rice.' },
+                    { id: '3', stepNumber: 3, text: 'Sear chicken in a hot pan until golden.' },
+                    { id: '4', stepNumber: 4, text: 'Pour sauce over chicken and simmer until cooked through.' },
+                    { id: '5', stepNumber: 5, text: 'Garnish with sesame seeds and green onions.' },
                 ],
-                tips: ['Use dark meat (thighs) for juicier results', 'Serve over rice or with steamed vegetables', 'Double the sauce if you want extra for drizzling'],
+                tips: ['Use dark meat for juicier results', 'Serve over rice or with vegetables'],
             },
             {
                 id: '4',
@@ -139,23 +189,19 @@
                 isFavorite: false,
                 isWishList: false,
                 categories: ['Salad', 'Healthy', 'Quick & Easy'],
+                createdAt: '2024-01-25',
                 ingredients: [
                     { id: '1', text: '6 cups mixed greens' },
                     { id: '2', text: '1 cucumber, sliced' },
-                    { id: '3', text: '1 cup cherry tomatoes, halved' },
-                    { id: '4', text: '1/2 red onion, thinly sliced' },
-                    { id: '5', text: '1/4 cup olive oil' },
-                    { id: '6', text: '2 tbsp balsamic vinegar' },
-                    { id: '7', text: '1 tsp Dijon mustard' },
-                    { id: '8', text: 'Salt and pepper to taste' },
+                    { id: '3', text: '1 cup cherry tomatoes' },
+                    { id: '4', text: '1/4 cup olive oil' },
                 ],
                 directions: [
-                    { id: '1', stepNumber: 1, text: 'Wash and dry all vegetables thoroughly.' },
-                    { id: '2', stepNumber: 2, text: 'Combine greens, cucumber, tomatoes, and onion in a large bowl.' },
-                    { id: '3', stepNumber: 3, text: 'Whisk together olive oil, balsamic vinegar, Dijon mustard, salt, and pepper.' },
-                    { id: '4', stepNumber: 4, text: 'Toss salad with dressing just before serving.' },
+                    { id: '1', stepNumber: 1, text: 'Wash and dry vegetables.' },
+                    { id: '2', stepNumber: 2, text: 'Combine in a large bowl.' },
+                    { id: '3', stepNumber: 3, text: 'Toss with dressing before serving.' },
                 ],
-                tips: ['Add dressing right before serving to keep greens crisp', 'Try adding avocado or nuts for extra texture'],
+                tips: ['Add dressing right before serving'],
             },
             {
                 id: '5',
@@ -167,33 +213,119 @@
                 isFavorite: true,
                 isWishList: true,
                 categories: ['Baking', 'Breakfast', 'Dessert'],
+                createdAt: '2024-01-05',
                 ingredients: [
                     { id: '1', text: '3 ripe bananas, mashed' },
                     { id: '2', text: '1/3 cup melted butter' },
                     { id: '3', text: '3/4 cup sugar' },
                     { id: '4', text: '1 egg, beaten' },
-                    { id: '5', text: '1 tsp vanilla extract' },
-                    { id: '6', text: '1 tsp baking soda' },
-                    { id: '7', text: '1 1/2 cups all-purpose flour' },
-                    { id: '8', text: 'Pinch of salt' },
+                    { id: '5', text: '1 1/2 cups flour' },
                 ],
                 directions: [
-                    { id: '1', stepNumber: 1, text: 'Preheat oven to 350°F (175°C). Grease a 9x5 inch loaf pan.' },
+                    { id: '1', stepNumber: 1, text: 'Preheat oven to 350°F.' },
                     { id: '2', stepNumber: 2, text: 'Mix mashed bananas with melted butter.' },
-                    { id: '3', stepNumber: 3, text: 'Stir in sugar, egg, and vanilla.' },
-                    { id: '4', stepNumber: 4, text: 'Sprinkle baking soda and salt over mixture and mix.' },
-                    { id: '5', stepNumber: 5, text: 'Add flour and mix until just combined.' },
-                    { id: '6', stepNumber: 6, text: 'Pour into prepared pan.' },
-                    { id: '7', stepNumber: 7, text: 'Bake for 60-65 minutes until a toothpick comes out clean.' },
-                    { id: '8', stepNumber: 8, text: 'Cool in pan for 10 minutes, then turn out onto a wire rack.' },
+                    { id: '3', stepNumber: 3, text: 'Add remaining ingredients.' },
+                    { id: '4', stepNumber: 4, text: 'Bake for 60 minutes.' },
                 ],
-                tips: ['Use very ripe bananas for best flavor', 'Add chocolate chips or walnuts for variety', 'Bread freezes well - wrap tightly in plastic wrap'],
+                tips: ['Use very ripe bananas for best flavor'],
+            },
+            {
+                id: '6',
+                title: 'Margherita Pizza',
+                description: 'Classic Italian pizza with fresh mozzarella, basil, and tomato sauce!',
+                prepTime: 20,
+                cookTime: 15,
+                servings: 4,
+                isFavorite: true,
+                isWishList: false,
+                categories: ['Dinner', 'Italian'],
+                createdAt: '2024-01-18',
+                ingredients: [
+                    { id: '1', text: 'Pizza dough' },
+                    { id: '2', text: '1 cup tomato sauce' },
+                    { id: '3', text: '8 oz fresh mozzarella' },
+                    { id: '4', text: 'Fresh basil leaves' },
+                ],
+                directions: [
+                    { id: '1', stepNumber: 1, text: 'Preheat oven to 475°F.' },
+                    { id: '2', stepNumber: 2, text: 'Roll out pizza dough.' },
+                    { id: '3', stepNumber: 3, text: 'Spread sauce and add toppings.' },
+                    { id: '4', stepNumber: 4, text: 'Bake for 12-15 minutes.' },
+                ],
+                tips: ['Use a pizza stone for crispy crust'],
+            },
+            {
+                id: '7',
+                title: 'Greek Yogurt Parfait',
+                description: 'Layers of creamy yogurt, fresh berries, and crunchy granola!',
+                prepTime: 5,
+                cookTime: 0,
+                servings: 2,
+                isFavorite: false,
+                isWishList: true,
+                categories: ['Breakfast', 'Healthy'],
+                createdAt: '2024-01-22',
+                ingredients: [
+                    { id: '1', text: '2 cups Greek yogurt' },
+                    { id: '2', text: '1 cup mixed berries' },
+                    { id: '3', text: '1/2 cup granola' },
+                    { id: '4', text: '2 tbsp honey' },
+                ],
+                directions: [
+                    { id: '1', stepNumber: 1, text: 'Layer yogurt in glasses.' },
+                    { id: '2', stepNumber: 2, text: 'Add berries and granola.' },
+                    { id: '3', stepNumber: 3, text: 'Drizzle with honey.' },
+                ],
+                tips: ['Prepare the night before for easy breakfast'],
+            },
+            {
+                id: '8',
+                title: 'Beef Tacos',
+                description: 'Seasoned ground beef in crispy shells with all your favorite toppings!',
+                prepTime: 10,
+                cookTime: 15,
+                servings: 6,
+                isFavorite: false,
+                isWishList: false,
+                categories: ['Dinner', 'Mexican', 'Quick & Easy'],
+                createdAt: '2024-01-12',
+                ingredients: [
+                    { id: '1', text: '1 lb ground beef' },
+                    { id: '2', text: 'Taco seasoning' },
+                    { id: '3', text: 'Taco shells' },
+                    { id: '4', text: 'Toppings: lettuce, cheese, salsa' },
+                ],
+                directions: [
+                    { id: '1', stepNumber: 1, text: 'Brown ground beef in a skillet.' },
+                    { id: '2', stepNumber: 2, text: 'Add taco seasoning and water.' },
+                    { id: '3', stepNumber: 3, text: 'Simmer until thickened.' },
+                    { id: '4', stepNumber: 4, text: 'Serve in taco shells with toppings.' },
+                ],
+                tips: ['Try different proteins like chicken or fish'],
             },
         ];
 
-        // Icons (simple SVG components)
-        const ChefHatIcon = () => (
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        // Icons
+        const GridIcon = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+        );
+
+        const ListIcon = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+        );
+
+        const LayoutIcon = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+            </svg>
+        );
+
+        const ChefHatIcon = ({ className = "w-8 h-8" }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
             </svg>
         );
@@ -234,6 +366,12 @@
             </svg>
         );
 
+        const SortIcon = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+            </svg>
+        );
+
         const PlusIcon = ({ className }) => (
             <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -254,8 +392,11 @@
             const [recipes, setRecipes] = useState(mockRecipes);
             const [searchTerm, setSearchTerm] = useState('');
             const [selectedCategory, setSelectedCategory] = useState('');
+            const [viewMode, setViewMode] = useState('gallery'); // gallery, list, compact
+            const [cardSize, setCardSize] = useState('medium'); // small, medium, large
+            const [sortBy, setSortBy] = useState('name'); // name, time, newest, category
 
-            const categories = ['Dessert', 'Baking', 'Dinner', 'Italian', 'Quick & Easy', 'Chicken', 'Asian', 'Salad', 'Healthy', 'Breakfast'];
+            const categories = ['Dessert', 'Baking', 'Dinner', 'Italian', 'Quick & Easy', 'Chicken', 'Asian', 'Salad', 'Healthy', 'Breakfast', 'Mexican'];
 
             const toggleFavorite = (id) => {
                 setRecipes(recipes.map(r => r.id === id ? { ...r, isFavorite: !r.isFavorite } : r));
@@ -271,20 +412,222 @@
                 }
             };
 
-            const filteredRecipes = recipes.filter(recipe => {
-                const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                    recipe.description?.toLowerCase().includes(searchTerm.toLowerCase());
-                const matchesFilter = filterType === 'all' ? true :
-                                    filterType === 'favorites' ? recipe.isFavorite :
-                                    recipe.isWishList;
-                const matchesCategory = !selectedCategory || recipe.categories.includes(selectedCategory);
-                return matchesSearch && matchesFilter && matchesCategory;
-            });
+            const sortedAndFilteredRecipes = useMemo(() => {
+                let filtered = recipes.filter(recipe => {
+                    const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                        recipe.description?.toLowerCase().includes(searchTerm.toLowerCase());
+                    const matchesFilter = filterType === 'all' ? true :
+                                        filterType === 'favorites' ? recipe.isFavorite :
+                                        recipe.isWishList;
+                    const matchesCategory = !selectedCategory || recipe.categories.includes(selectedCategory);
+                    return matchesSearch && matchesFilter && matchesCategory;
+                });
+
+                // Sort
+                const sorted = [...filtered].sort((a, b) => {
+                    switch (sortBy) {
+                        case 'name':
+                            return a.title.localeCompare(b.title);
+                        case 'time':
+                            return (a.prepTime + a.cookTime) - (b.prepTime + b.cookTime);
+                        case 'newest':
+                            return new Date(b.createdAt) - new Date(a.createdAt);
+                        case 'category':
+                            return (a.categories[0] || '').localeCompare(b.categories[0] || '');
+                        default:
+                            return 0;
+                    }
+                });
+
+                return sorted;
+            }, [recipes, searchTerm, filterType, selectedCategory, sortBy]);
 
             const getTitle = () => {
                 if (filterType === 'favorites') return 'Favorite Recipes';
                 if (filterType === 'wishlist') return 'Wish List';
                 return 'All Recipes';
+            };
+
+            const getGridClass = () => {
+                if (viewMode === 'list' || viewMode === 'compact') return 'space-y-4';
+
+                if (cardSize === 'small') {
+                    return 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4';
+                } else if (cardSize === 'large') {
+                    return 'grid grid-cols-1 lg:grid-cols-2 gap-6';
+                } else {
+                    return 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6';
+                }
+            };
+
+            const RecipeCard = ({ recipe }) => {
+                const visual = recipeVisuals[recipe.title] || {
+                    gradient: 'linear-gradient(135deg, #D97757 0%, #8B7355 100%)',
+                    emoji: '🍳',
+                    image: ''
+                };
+                const totalTime = recipe.prepTime + recipe.cookTime;
+
+                // List View
+                if (viewMode === 'list') {
+                    return (
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-all fade-in flex items-center gap-4">
+                            <button onClick={() => { setSelectedRecipe(recipe); setView('detail'); }} className="flex items-center gap-4 flex-1">
+                                <div className="text-5xl flex-shrink-0">{visual.emoji}</div>
+                                <div className="flex-1 text-left">
+                                    <h3 className="text-lg font-bold text-claude-dark hover:text-claude-orange transition-colors">
+                                        {recipe.title}
+                                    </h3>
+                                    <p className="text-sm text-gray-600 line-clamp-1">{recipe.description}</p>
+                                    <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                                        {totalTime > 0 && (
+                                            <span className="flex items-center gap-1">
+                                                <ClockIcon className="w-3 h-3" />
+                                                {totalTime}min
+                                            </span>
+                                        )}
+                                        <span className="flex items-center gap-1">
+                                            <UsersIcon className="w-3 h-3" />
+                                            {recipe.servings}
+                                        </span>
+                                        {recipe.categories.map(cat => (
+                                            <span key={cat} className="px-2 py-0.5 bg-gray-100 rounded-full">{cat}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </button>
+                            <div className="flex gap-2 flex-shrink-0">
+                                <button
+                                    onClick={() => toggleFavorite(recipe.id)}
+                                    className={`p-2 rounded-lg transition-colors ${
+                                        recipe.isFavorite ? 'bg-red-50 text-red-600' : 'text-gray-400 hover:bg-gray-100'
+                                    }`}
+                                >
+                                    <HeartIcon filled={recipe.isFavorite} className="w-5 h-5" />
+                                </button>
+                                <button
+                                    onClick={() => toggleWishlist(recipe.id)}
+                                    className={`p-2 rounded-lg transition-colors ${
+                                        recipe.isWishList ? 'bg-yellow-50 text-yellow-600' : 'text-gray-400 hover:bg-gray-100'
+                                    }`}
+                                >
+                                    <StarIcon filled={recipe.isWishList} className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+                    );
+                }
+
+                // Compact List View
+                if (viewMode === 'compact') {
+                    return (
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 hover:shadow-md transition-all fade-in flex items-center gap-3">
+                            <button onClick={() => { setSelectedRecipe(recipe); setView('detail'); }} className="flex items-center gap-3 flex-1">
+                                <div className="text-3xl">{visual.emoji}</div>
+                                <div className="flex-1 text-left">
+                                    <h3 className="font-semibold text-claude-dark hover:text-claude-orange transition-colors">
+                                        {recipe.title}
+                                    </h3>
+                                    <div className="flex items-center gap-3 text-xs text-gray-500">
+                                        {totalTime > 0 && <span>{totalTime}min</span>}
+                                        <span>{recipe.servings} servings</span>
+                                    </div>
+                                </div>
+                            </button>
+                            <div className="flex gap-1">
+                                <button
+                                    onClick={() => toggleFavorite(recipe.id)}
+                                    className={`p-1.5 rounded transition-colors ${
+                                        recipe.isFavorite ? 'text-red-600' : 'text-gray-300 hover:text-red-400'
+                                    }`}
+                                >
+                                    <HeartIcon filled={recipe.isFavorite} className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => toggleWishlist(recipe.id)}
+                                    className={`p-1.5 rounded transition-colors ${
+                                        recipe.isWishList ? 'text-yellow-600' : 'text-gray-300 hover:text-yellow-400'
+                                    }`}
+                                >
+                                    <StarIcon filled={recipe.isWishList} className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    );
+                }
+
+                // Gallery View (Card)
+                const cardHeightClass = cardSize === 'small' ? 'h-32' : cardSize === 'large' ? 'h-72' : 'h-48';
+
+                return (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-lg transition-all fade-in">
+                        <button onClick={() => { setSelectedRecipe(recipe); setView('detail'); }} className="w-full text-left">
+                            <div
+                                className={`w-full ${cardHeightClass} rounded-lg mb-3 flex items-center justify-center overflow-hidden recipe-image`}
+                                style={{ backgroundImage: `url(${visual.image}), ${visual.gradient}` }}
+                            >
+                                <span className="text-white text-6xl drop-shadow-lg">{visual.emoji}</span>
+                            </div>
+
+                            <div className="space-y-2">
+                                <h3 className={`font-bold text-claude-dark hover:text-claude-orange transition-colors ${cardSize === 'small' ? 'text-sm line-clamp-1' : 'text-lg line-clamp-2'}`}>
+                                    {recipe.title}
+                                </h3>
+
+                                {cardSize !== 'small' && recipe.description && (
+                                    <p className="text-gray-600 text-sm line-clamp-2">
+                                        {recipe.description}
+                                    </p>
+                                )}
+
+                                <div className="flex items-center gap-3 text-sm text-gray-500">
+                                    {totalTime > 0 && (
+                                        <div className="flex items-center gap-1">
+                                            <ClockIcon className="w-4 h-4" />
+                                            <span>{totalTime}min</span>
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-1">
+                                        <UsersIcon className="w-4 h-4" />
+                                        <span>{recipe.servings}</span>
+                                    </div>
+                                </div>
+
+                                {cardSize !== 'small' && recipe.categories.length > 0 && (
+                                    <div className="flex flex-wrap gap-1">
+                                        {recipe.categories.slice(0, 2).map((category) => (
+                                            <span key={category} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+                                                {category}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </button>
+
+                        <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-200">
+                            <button
+                                onClick={() => toggleFavorite(recipe.id)}
+                                className={`flex items-center gap-1 px-2 py-1.5 rounded-lg transition-colors ${
+                                    recipe.isFavorite ? 'bg-red-50 text-red-600' : 'text-gray-600 hover:bg-gray-100'
+                                }`}
+                            >
+                                <HeartIcon filled={recipe.isFavorite} className="w-4 h-4" />
+                                {cardSize !== 'small' && <span className="text-sm">Favorite</span>}
+                            </button>
+
+                            <button
+                                onClick={() => toggleWishlist(recipe.id)}
+                                className={`flex items-center gap-1 px-2 py-1.5 rounded-lg transition-colors ${
+                                    recipe.isWishList ? 'bg-yellow-50 text-yellow-600' : 'text-gray-600 hover:bg-gray-100'
+                                }`}
+                            >
+                                <StarIcon filled={recipe.isWishList} className="w-4 h-4" />
+                                {cardSize !== 'small' && <span className="text-sm">Wish List</span>}
+                            </button>
+                        </div>
+                    </div>
+                );
             };
 
             return (
@@ -293,29 +636,25 @@
                     <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                             <div className="flex items-center justify-between h-16">
-                                <button onClick={() => { setView('list'); setFilterType('all'); }} className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+                                <button onClick={() => { setView('list'); setFilterType('all'); }} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                                     <ChefHatIcon />
                                     <span className="text-2xl font-bold text-claude-dark">RecipeBox</span>
                                 </button>
 
-                                <nav className="hidden md:flex items-center space-x-1">
+                                <nav className="hidden md:flex items-center gap-1">
                                     <button
                                         onClick={() => { setView('list'); setFilterType('all'); }}
-                                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                                            view === 'list' && filterType === 'all'
-                                                ? 'bg-claude-orange text-white'
-                                                : 'text-gray-700 hover:bg-gray-100'
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                                            view === 'list' && filterType === 'all' ? 'bg-claude-orange text-white' : 'text-gray-700 hover:bg-gray-100'
                                         }`}
                                     >
-                                        <ChefHatIcon />
+                                        <ChefHatIcon className="w-5 h-5" />
                                         <span className="font-medium">All Recipes</span>
                                     </button>
                                     <button
                                         onClick={() => { setView('list'); setFilterType('favorites'); }}
-                                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                                            view === 'list' && filterType === 'favorites'
-                                                ? 'bg-claude-orange text-white'
-                                                : 'text-gray-700 hover:bg-gray-100'
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                                            view === 'list' && filterType === 'favorites' ? 'bg-claude-orange text-white' : 'text-gray-700 hover:bg-gray-100'
                                         }`}
                                     >
                                         <HeartIcon filled={false} className="w-5 h-5" />
@@ -323,10 +662,8 @@
                                     </button>
                                     <button
                                         onClick={() => { setView('list'); setFilterType('wishlist'); }}
-                                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                                            view === 'list' && filterType === 'wishlist'
-                                                ? 'bg-claude-orange text-white'
-                                                : 'text-gray-700 hover:bg-gray-100'
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                                            view === 'list' && filterType === 'wishlist' ? 'bg-claude-orange text-white' : 'text-gray-700 hover:bg-gray-100'
                                         }`}
                                     >
                                         <StarIcon filled={false} className="w-5 h-5" />
@@ -334,7 +671,7 @@
                                     </button>
                                 </nav>
 
-                                <div className="bg-claude-orange text-white px-4 py-2 rounded-lg opacity-50 cursor-not-allowed flex items-center space-x-2">
+                                <div className="bg-claude-orange text-white px-4 py-2 rounded-lg opacity-50 cursor-not-allowed flex items-center gap-2">
                                     <PlusIcon className="w-5 h-5" />
                                     <span className="hidden sm:inline">Add Recipe</span>
                                 </div>
@@ -346,43 +683,132 @@
                     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         {view === 'list' && (
                             <div className="space-y-6">
-                                <div>
-                                    <h1 className="text-4xl font-bold text-claude-dark mb-2">{getTitle()}</h1>
-                                    <p className="text-gray-600">
-                                        {filteredRecipes.length} {filteredRecipes.length === 1 ? 'recipe' : 'recipes'}
-                                    </p>
-                                </div>
-
-                                <div className="flex flex-col sm:flex-row gap-4">
-                                    <div className="flex-1 relative">
-                                        <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                        <input
-                                            type="text"
-                                            placeholder="Search recipes..."
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-claude-orange focus:border-transparent"
-                                        />
-                                    </div>
-
-                                    <div className="sm:w-64 relative">
-                                        <FilterIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                        <select
-                                            value={selectedCategory}
-                                            onChange={(e) => setSelectedCategory(e.target.value)}
-                                            className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-claude-orange focus:border-transparent appearance-none cursor-pointer bg-white"
-                                        >
-                                            <option value="">All Categories</option>
-                                            {categories.map((category) => (
-                                                <option key={category} value={category}>
-                                                    {category}
-                                                </option>
-                                            ))}
-                                        </select>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h1 className="text-4xl font-bold text-claude-dark mb-2">{getTitle()}</h1>
+                                        <p className="text-gray-600">
+                                            {sortedAndFilteredRecipes.length} {sortedAndFilteredRecipes.length === 1 ? 'recipe' : 'recipes'}
+                                        </p>
                                     </div>
                                 </div>
 
-                                {filteredRecipes.length === 0 ? (
+                                {/* Controls Bar */}
+                                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                                    <div className="flex flex-col lg:flex-row gap-4">
+                                        {/* Search */}
+                                        <div className="flex-1 relative">
+                                            <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                            <input
+                                                type="text"
+                                                placeholder="Search recipes..."
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                                className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-claude-orange focus:border-transparent"
+                                            />
+                                        </div>
+
+                                        {/* Filter by Category */}
+                                        <div className="w-full lg:w-48 relative">
+                                            <FilterIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                            <select
+                                                value={selectedCategory}
+                                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                                className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-claude-orange focus:border-transparent appearance-none cursor-pointer bg-white"
+                                            >
+                                                <option value="">All Categories</option>
+                                                {categories.map((category) => (
+                                                    <option key={category} value={category}>{category}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        {/* Sort */}
+                                        <div className="w-full lg:w-48 relative">
+                                            <SortIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                            <select
+                                                value={sortBy}
+                                                onChange={(e) => setSortBy(e.target.value)}
+                                                className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-claude-orange focus:border-transparent appearance-none cursor-pointer bg-white"
+                                            >
+                                                <option value="name">Sort by Name</option>
+                                                <option value="time">Sort by Time</option>
+                                                <option value="newest">Sort by Newest</option>
+                                                <option value="category">Sort by Category</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {/* View Controls */}
+                                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-medium text-gray-700">View:</span>
+                                            <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+                                                <button
+                                                    onClick={() => setViewMode('gallery')}
+                                                    className={`px-3 py-1.5 rounded-md transition-colors ${
+                                                        viewMode === 'gallery' ? 'bg-white shadow-sm text-claude-orange' : 'text-gray-600 hover:text-gray-900'
+                                                    }`}
+                                                    title="Gallery View"
+                                                >
+                                                    <GridIcon className="w-5 h-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => setViewMode('list')}
+                                                    className={`px-3 py-1.5 rounded-md transition-colors ${
+                                                        viewMode === 'list' ? 'bg-white shadow-sm text-claude-orange' : 'text-gray-600 hover:text-gray-900'
+                                                    }`}
+                                                    title="List View"
+                                                >
+                                                    <ListIcon className="w-5 h-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => setViewMode('compact')}
+                                                    className={`px-3 py-1.5 rounded-md transition-colors ${
+                                                        viewMode === 'compact' ? 'bg-white shadow-sm text-claude-orange' : 'text-gray-600 hover:text-gray-900'
+                                                    }`}
+                                                    title="Compact View"
+                                                >
+                                                    <LayoutIcon className="w-5 h-5" />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {viewMode === 'gallery' && (
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-medium text-gray-700">Size:</span>
+                                                <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+                                                    <button
+                                                        onClick={() => setCardSize('small')}
+                                                        className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
+                                                            cardSize === 'small' ? 'bg-white shadow-sm text-claude-orange font-medium' : 'text-gray-600 hover:text-gray-900'
+                                                        }`}
+                                                    >
+                                                        S
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setCardSize('medium')}
+                                                        className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
+                                                            cardSize === 'medium' ? 'bg-white shadow-sm text-claude-orange font-medium' : 'text-gray-600 hover:text-gray-900'
+                                                        }`}
+                                                    >
+                                                        M
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setCardSize('large')}
+                                                        className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
+                                                            cardSize === 'large' ? 'bg-white shadow-sm text-claude-orange font-medium' : 'text-gray-600 hover:text-gray-900'
+                                                        }`}
+                                                    >
+                                                        L
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Recipe Grid/List */}
+                                {sortedAndFilteredRecipes.length === 0 ? (
                                     <div className="text-center py-12">
                                         <div className="text-6xl mb-4">📖</div>
                                         <h3 className="text-xl font-semibold text-gray-700 mb-2">No recipes found</h3>
@@ -391,79 +817,9 @@
                                         </p>
                                     </div>
                                 ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {filteredRecipes.map((recipe) => (
-                                            <div key={recipe.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                                                <button onClick={() => { setSelectedRecipe(recipe); setView('detail'); }} className="w-full text-left">
-                                                    <div className="w-full h-48 bg-gradient-to-br from-claude-orange to-claude-brown rounded-lg mb-4 flex items-center justify-center">
-                                                        <span className="text-white text-6xl">🍳</span>
-                                                    </div>
-
-                                                    <div className="space-y-3">
-                                                        <h3 className="text-xl font-bold text-claude-dark hover:text-claude-orange transition-colors line-clamp-2">
-                                                            {recipe.title}
-                                                        </h3>
-
-                                                        {recipe.description && (
-                                                            <p className="text-gray-600 text-sm line-clamp-2">
-                                                                {recipe.description}
-                                                            </p>
-                                                        )}
-
-                                                        <div className="flex items-center space-x-4 text-sm text-gray-500">
-                                                            {(recipe.prepTime + recipe.cookTime) > 0 && (
-                                                                <div className="flex items-center space-x-1">
-                                                                    <ClockIcon className="w-4 h-4" />
-                                                                    <span>{recipe.prepTime + recipe.cookTime} min</span>
-                                                                </div>
-                                                            )}
-                                                            <div className="flex items-center space-x-1">
-                                                                <UsersIcon className="w-4 h-4" />
-                                                                <span>{recipe.servings}</span>
-                                                            </div>
-                                                        </div>
-
-                                                        {recipe.categories.length > 0 && (
-                                                            <div className="flex flex-wrap gap-2">
-                                                                {recipe.categories.slice(0, 3).map((category) => (
-                                                                    <span
-                                                                        key={category}
-                                                                        className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
-                                                                    >
-                                                                        {category}
-                                                                    </span>
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </button>
-
-                                                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-                                                    <button
-                                                        onClick={() => toggleFavorite(recipe.id)}
-                                                        className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg transition-colors ${
-                                                            recipe.isFavorite
-                                                                ? 'bg-red-50 text-red-600'
-                                                                : 'text-gray-600 hover:bg-gray-100'
-                                                        }`}
-                                                    >
-                                                        <HeartIcon filled={recipe.isFavorite} className="w-5 h-5" />
-                                                        <span className="text-sm">Favorite</span>
-                                                    </button>
-
-                                                    <button
-                                                        onClick={() => toggleWishlist(recipe.id)}
-                                                        className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg transition-colors ${
-                                                            recipe.isWishList
-                                                                ? 'bg-yellow-50 text-yellow-600'
-                                                                : 'text-gray-600 hover:bg-gray-100'
-                                                        }`}
-                                                    >
-                                                        <StarIcon filled={recipe.isWishList} className="w-5 h-5" />
-                                                        <span className="text-sm">Wish List</span>
-                                                    </button>
-                                                </div>
-                                            </div>
+                                    <div className={getGridClass()}>
+                                        {sortedAndFilteredRecipes.map((recipe) => (
+                                            <RecipeCard key={recipe.id} recipe={recipe} />
                                         ))}
                                     </div>
                                 )}
@@ -474,15 +830,22 @@
                             <div className="max-w-4xl mx-auto space-y-6 pb-8">
                                 <button
                                     onClick={() => setView('list')}
-                                    className="inline-flex items-center space-x-2 text-gray-600 hover:text-claude-orange transition-colors"
+                                    className="inline-flex items-center gap-2 text-gray-600 hover:text-claude-orange transition-colors"
                                 >
                                     <ArrowLeftIcon className="w-5 h-5" />
                                     <span>Back to recipes</span>
                                 </button>
 
                                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                                    <div className="w-full h-64 bg-gradient-to-br from-claude-orange to-claude-brown rounded-lg mb-6 flex items-center justify-center">
-                                        <span className="text-white text-8xl">🍳</span>
+                                    <div
+                                        className="w-full h-64 rounded-lg mb-6 flex items-center justify-center overflow-hidden recipe-image"
+                                        style={{
+                                            backgroundImage: `url(${recipeVisuals[selectedRecipe.title]?.image}), ${recipeVisuals[selectedRecipe.title]?.gradient || 'linear-gradient(135deg, #D97757 0%, #8B7355 100%)'}`
+                                        }}
+                                    >
+                                        <span className="text-white text-8xl drop-shadow-lg">
+                                            {recipeVisuals[selectedRecipe.title]?.emoji || '🍳'}
+                                        </span>
                                     </div>
 
                                     <div className="space-y-4">
@@ -493,12 +856,12 @@
                                         )}
 
                                         <div className="flex flex-wrap gap-4 text-gray-600">
-                                            <div className="flex items-center space-x-2">
+                                            <div className="flex items-center gap-2">
                                                 <ClockIcon className="w-5 h-5" />
                                                 <span>{selectedRecipe.prepTime + selectedRecipe.cookTime} min total</span>
                                                 <span className="text-sm">({selectedRecipe.prepTime} prep)</span>
                                             </div>
-                                            <div className="flex items-center space-x-2">
+                                            <div className="flex items-center gap-2">
                                                 <UsersIcon className="w-5 h-5" />
                                                 <span>{selectedRecipe.servings} servings</span>
                                             </div>
@@ -507,10 +870,7 @@
                                         {selectedRecipe.categories.length > 0 && (
                                             <div className="flex flex-wrap gap-2">
                                                 {selectedRecipe.categories.map((category) => (
-                                                    <span
-                                                        key={category}
-                                                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
-                                                    >
+                                                    <span key={category} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
                                                         {category}
                                                     </span>
                                                 ))}
@@ -520,10 +880,8 @@
                                         <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
                                             <button
                                                 onClick={() => toggleFavorite(selectedRecipe.id)}
-                                                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                                                    selectedRecipe.isFavorite
-                                                        ? 'bg-red-50 text-red-600'
-                                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                                                    selectedRecipe.isFavorite ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                                 }`}
                                             >
                                                 <HeartIcon filled={selectedRecipe.isFavorite} className="w-5 h-5" />
@@ -532,10 +890,8 @@
 
                                             <button
                                                 onClick={() => toggleWishlist(selectedRecipe.id)}
-                                                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                                                    selectedRecipe.isWishList
-                                                        ? 'bg-yellow-50 text-yellow-600'
-                                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                                                    selectedRecipe.isWishList ? 'bg-yellow-50 text-yellow-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                                 }`}
                                             >
                                                 <StarIcon filled={selectedRecipe.isWishList} className="w-5 h-5" />
@@ -591,7 +947,7 @@
                     {/* Demo Notice Banner */}
                     <div className="fixed bottom-0 left-0 right-0 bg-claude-orange text-white py-3 px-4 text-center shadow-lg">
                         <p className="text-sm sm:text-base">
-                            📱 <strong>Demo Mode:</strong> This is a preview of the RecipeBox UI. The full version includes AI recipe extraction, photo scanning, and database storage!
+                            📱 <strong>Enhanced Demo:</strong> Try different views (Gallery/List/Compact), sizes (S/M/L), and sorting options! Full version includes AI recipe extraction.
                         </p>
                     </div>
                 </div>
