@@ -1,0 +1,20 @@
+{
+  "name": "recipe-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-powered recipe manager with URL scraping and cookbook photo OCR",
+  "scripts": {
+    "install:all": "npm install && cd client && npm install && cd ../server && npm install",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "build": "cd client && npm run build",
+    "start": "cd server && npm start"
+  },
+  "keywords": ["recipe", "ai", "ocr", "web-scraping"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
