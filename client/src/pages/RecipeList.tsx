@@ -80,8 +80,8 @@ export default function RecipeList({ filterType = 'all' }: RecipeListProps) {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-4xl font-bold text-claude-dark mb-2">{getTitle()}</h1>
-        <p className="text-gray-600">
+        <h1 className="text-4xl font-bold text-claude-dark dark:text-white mb-2">{getTitle()}</h1>
+        <p className="text-gray-600 dark:text-gray-400">
           {filteredRecipes.length} {filteredRecipes.length === 1 ? 'recipe' : 'recipes'}
         </p>
       </div>
@@ -122,13 +122,13 @@ export default function RecipeList({ filterType = 'all' }: RecipeListProps) {
       {loading ? (
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-claude-orange mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading recipes...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading recipes...</p>
         </div>
       ) : filteredRecipes.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-6xl mb-4">📖</div>
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">No recipes found</h3>
-          <p className="text-gray-600">
+          <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No recipes found</h3>
+          <p className="text-gray-600 dark:text-gray-400">
             {searchTerm
               ? 'Try adjusting your search terms'
               : 'Start by adding your first recipe!'}

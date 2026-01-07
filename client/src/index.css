@@ -1,10 +1,15 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-claude-orange: #D97757;
+  --color-claude-cream: #F4F1EA;
+  --color-claude-dark: #1C1C1C;
+  --color-claude-brown: #8B7355;
+}
 
 @layer base {
   body {
-    @apply bg-claude-cream text-claude-dark;
+    @apply bg-claude-cream dark:bg-gray-900 text-claude-dark dark:text-white transition-colors duration-300;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 }
@@ -15,14 +20,23 @@
   }
 
   .btn-secondary {
-    @apply bg-white text-claude-dark border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors;
+    @apply bg-white dark:bg-gray-700 text-claude-dark dark:text-white border border-gray-300 dark:border-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors;
   }
 
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
+    @apply bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 transition-colors duration-300;
   }
 
   .input-field {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-claude-orange focus:border-transparent;
+    @apply w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-claude-orange focus:border-transparent;
+  }
+
+  .recipe-image {
+    background-size: cover;
+    background-position: center;
+  }
+
+  .cooking-mode-bg {
+    background: linear-gradient(135deg, #1C1C1C 0%, #2C2C2C 100%);
   }
 }
